@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "player.h"
+#include "config.h"
 
 Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
     // creates the player pointer and allocates memory
@@ -12,7 +13,7 @@ Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
 
     // creates the surface to be drawn
     SDL_Surface* surface;
-    surface = IMG_Load("melody.png");
+    surface = IMG_Load("player.png");
 
     // creates a texture to use hardware rendering
     SDL_Texture* tex = SDL_CreateTextureFromSurface(rend, surface);
@@ -25,8 +26,8 @@ Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
     SDL_QueryTexture(tex, NULL, NULL, &dest.w, &dest.h);
     
     // centers the geometry to the center of the screen
-    dest.w /= 6;
-    dest.h /= 6;
+    //dest.w /= 6;
+    //dest.h /= 6;
     dest.x = (winw - dest.w) / 2;
     dest.y = (winh - dest.h) / 2;
 
@@ -34,7 +35,6 @@ Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
     player->surface = surface;
     player->tex = tex;
     player->dest = dest;
-    player->speed = PLAYER_SPEED;
     player->shoot = PLAYER_SHOOT_DELAY;
     return player;
 }

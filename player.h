@@ -1,11 +1,3 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_timer.h>
-#include <stdbool.h>
-
-#define PLAYER_SPEED 6
-#define PLAYER_SHOOT_DELAY 12
-
 typedef struct {
     SDL_Surface* surface;
     SDL_Texture* tex;

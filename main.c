@@ -5,25 +5,23 @@
 
 #include "player.h"
 #include "bullet.h"
+#include "config.h"
  
 int main(int argc, char *argv[])
 {
-    int winw = 640;
-    int winh = 360;
-    int framerate = 120;
-
     // returns zero on success else non-zero
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         printf("error initializing SDL: %s\n", SDL_GetError());
     }
-    SDL_Window* win = SDL_CreateWindow("Platform Game", // creates a window
+    // creates a window
+    SDL_Window* win = SDL_CreateWindow("Shoot Em' Up",
                                        SDL_WINDOWPOS_CENTERED,
                                        SDL_WINDOWPOS_CENTERED,
-                                       winw, 
-                                       winh, 
+                                       WINDOW_WIDTH, 
+                                       WINDOW_HEIGHT, 
                                        0);
     // set the window to fullscreen
-    //SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
+    SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
 
     // triggers the program that controls
     // your graphics hardware and sets flags
@@ -33,10 +31,18 @@ int main(int argc, char *argv[])
     SDL_Renderer* rend = SDL_CreateRenderer(win, -1, render_flags);
  
     // create the main player
-    Player *player = createPlayer(rend, winw, winh);
+    Player *player = createPlayer(rend, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // stores all the bullets to be drawn in a linked list
-    Bullet *bullet = NULL;
+    Bullet *bullets[BULLET_MAX_QTY];
+    int bullet_qty = 0;
+
+    // create all the bullets and draw them outside the screen
+    // when the player shoot, they teleport to the player position
+    for (int b = 0; b < BULLET_MAX_QTY; b++) {
+        Bullet *bullet = createBullet(rend, -WINDOW_HEIGHT, -WINDOW_WIDTH);
+        bullets[b] = bullet;
+    }
     
     // controls animation loop
     int close = 0;
@@ -56,19 +62,23 @@ int main(int argc, char *argv[])
         // manages player movement
         movePlayer(player);
 
-        // add bullets to the linked list
-        if (shootBullet(player)) {       
-            addBullet(rend, bullet, player);
+        // moves the bullets to the players location
+        // to make the illusion that they are spawning
+        if (shootBullet(player)) {
+            int bullet_index = bullet_qty % BULLET_MAX_QTY;
+            bullets[bullet_index]->dest.x = player->dest.x + (bullets[bullet_index]->dest.w / 2);
+            bullets[bullet_index]->dest.y = player->dest.y + (bullets[bullet_index]->dest.h / 2);
+            bullet_qty++;
         }
 
         // clears the screen
         SDL_RenderClear(rend);
         
         // draws all the bullets first
-        //for (int b = 0; b < bullet_qty; b++) {
-        //    bullets[b]->dest.x += BULLET_SPEED;
-        //    SDL_RenderCopy(rend, bullets[b]->tex, NULL, &bullets[b]->dest);
-        //}
+        for (int b = 0; b < BULLET_MAX_QTY; b++) {
+            bullets[b]->dest.x += BULLET_SPEED;
+            SDL_RenderCopy(rend, bullets[b]->tex, NULL, &bullets[b]->dest);
+        }
 
         // then draws the player over
         SDL_RenderCopy(rend, player->tex, NULL, &player->dest);
@@ -77,8 +87,8 @@ int main(int argc, char *argv[])
         // for multiple rendering
         SDL_RenderPresent(rend);
  
-        // limits framerate
-        SDL_Delay(1000 / framerate);
+        // limits WINDOW_RATE
+        SDL_Delay(1000 / WINDOW_RATE);
     }
  
     // destroy texture
