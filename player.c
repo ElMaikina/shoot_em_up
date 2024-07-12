@@ -34,7 +34,8 @@ Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
     player->surface = surface;
     player->tex = tex;
     player->dest = dest;
-    player->speed = 6;
+    player->speed = PLAYER_SPEED;
+    player->shoot = PLAYER_SHOOT_DELAY;
     return player;
 }
 void movePlayer(Player *player) {
@@ -43,14 +44,28 @@ void movePlayer(Player *player) {
     
     // uses the arrow keys for movement
     if (keystate[SDL_SCANCODE_UP]) 
-        player->dest.y -= player->speed;
+        player->dest.y -= PLAYER_SPEED;
 
     if (keystate[SDL_SCANCODE_DOWN]) 
-        player->dest.y += player->speed;
+        player->dest.y += PLAYER_SPEED;
 
     if (keystate[SDL_SCANCODE_LEFT])
-        player->dest.x -= player->speed;
+        player->dest.x -= PLAYER_SPEED;
 
     if (keystate[SDL_SCANCODE_RIGHT])
-        player->dest.x += player->speed;
+        player->dest.x += PLAYER_SPEED;
+}
+bool shootBullet(Player *player) {
+    // gets pressed keys
+    const Uint8* keystate = SDL_GetKeyboardState(NULL);
+    
+    // uses the arrow keys for movement
+    if (keystate[SDL_SCANCODE_C]) {
+        if (player->shoot >= PLAYER_SHOOT_DELAY) {
+            player->shoot = 0;
+            return true;
+        }
+    }
+    player->shoot++;
+    return false;
 }

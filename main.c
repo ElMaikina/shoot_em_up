@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "player.h"
+#include "bullet.h"
  
 int main(int argc, char *argv[])
 {
@@ -34,6 +35,9 @@ int main(int argc, char *argv[])
     // create the main player
     Player *player = createPlayer(rend, winw, winh);
 
+    // stores all the bullets to be drawn in a linked list
+    Bullet *bullet = NULL;
+    
     // controls animation loop
     int close = 0;
  
@@ -45,16 +49,28 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) 
         {
             if (event.type == SDL_QUIT) {
-                printf("Exiting game...");
                 close = 1;
                 return 0;
             }
         }
         // manages player movement
         movePlayer(player);
-        
+
+        // add bullets to the linked list
+        if (shootBullet(player)) {       
+            addBullet(rend, bullet, player);
+        }
+
         // clears the screen
         SDL_RenderClear(rend);
+        
+        // draws all the bullets first
+        //for (int b = 0; b < bullet_qty; b++) {
+        //    bullets[b]->dest.x += BULLET_SPEED;
+        //    SDL_RenderCopy(rend, bullets[b]->tex, NULL, &bullets[b]->dest);
+        //}
+
+        // then draws the player over
         SDL_RenderCopy(rend, player->tex, NULL, &player->dest);
  
         // triggers the double buffers
