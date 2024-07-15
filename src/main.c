@@ -3,9 +3,10 @@
 #include <SDL2/SDL_timer.h>
 #include <stdbool.h>
 
-#include "player.h"
-#include "bullet.h"
-#include "config.h"
+#include "../include/player.h"
+#include "../include/bullet.h"
+#include "../include/enemy.h"
+#include "../include/config.h"
  
 int main(int argc, char *argv[])
 {
@@ -21,7 +22,7 @@ int main(int argc, char *argv[])
                                        WINDOW_HEIGHT, 
                                        0);
     // set the window to fullscreen
-    SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
+    // SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN);
 
     // triggers the program that controls
     // your graphics hardware and sets flags
@@ -36,6 +37,9 @@ int main(int argc, char *argv[])
     // stores all the bullets to be drawn in a linked list
     Bullet *bullets[BULLET_MAX_QTY];
     int bullet_qty = 0;
+
+    // create the enemy
+    Enemy *enemy = createEnemy(rend, 2 * WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
 
     // create all the bullets and draw them outside the screen
     // when the player shoot, they teleport to the player position
@@ -62,12 +66,15 @@ int main(int argc, char *argv[])
         // manages player movement
         movePlayer(player);
 
+        // apply limits to player movement
+        limitPlayer(player, WINDOW_WIDTH, WINDOW_HEIGHT);
+
         // moves the bullets to the players location
         // to make the illusion that they are spawning
         if (shootBullet(player)) {
             int bullet_index = bullet_qty % BULLET_MAX_QTY;
-            bullets[bullet_index]->dest.x = player->dest.x + (bullets[bullet_index]->dest.w / 2);
-            bullets[bullet_index]->dest.y = player->dest.y + (bullets[bullet_index]->dest.h / 2);
+            bullets[bullet_index]->dest.x = player->dest.x;// + (bullets[bullet_index]->dest.w / 2);
+            bullets[bullet_index]->dest.y = player->dest.y;// + (bullets[bullet_index]->dest.h / 2);
             bullet_qty++;
         }
 
@@ -82,6 +89,9 @@ int main(int argc, char *argv[])
 
         // then draws the player over
         SDL_RenderCopy(rend, player->tex, NULL, &player->dest);
+ 
+        // then draws the player over
+        SDL_RenderCopy(rend, enemy->tex, NULL, &enemy->dest);
  
         // triggers the double buffers
         // for multiple rendering
