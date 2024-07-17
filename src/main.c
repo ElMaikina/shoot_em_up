@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     Player *player = createPlayer(rend, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     // stores all the bullets to be drawn in a linked list
-    Bullet *bullets[BULLET_MAX_QTY];
+    Bullet *bullets[BULLET_QTY];
     int bullet_qty = 0;
 
     // create the enemy
@@ -43,62 +43,83 @@ int main(int argc, char *argv[])
 
     // create all the bullets and draw them outside the screen
     // when the player shoot, they teleport to the player position
-    for (int b = 0; b < BULLET_MAX_QTY; b++) {
+    for (int b = 0; b < BULLET_QTY; b++) {
         Bullet *bullet = createBullet(rend, -WINDOW_HEIGHT, -WINDOW_WIDTH);
         bullets[b] = bullet;
     }
     
     // controls animation loop
     int close = 0;
+
+    // count game ticks twice to update according to refresh rate
+    Uint32 ticks_a = 0;
+    Uint32 ticks_b = 0;
+
+    // get the difference of ticks between a frame and another
+    Uint32 delta = 0;
  
     // animation loop
     while (!close) {
 
+        // fetch game ticks
+        ticks_a = SDL_GetTicks();
+        
+        // get delta ticks to limit framerate
+        delta = ticks_a - ticks_b;
+
+        // poll os events
         SDL_Event event;
 
-        while (SDL_PollEvent(&event)) 
-        {
+        while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 close = 1;
                 return 0;
             }
         }
-        // manages player movement
-        movePlayer(player);
 
-        // apply limits to player movement
-        limitPlayer(player, WINDOW_WIDTH, WINDOW_HEIGHT);
+        // limit framerate by adding a delay
+        if (delta > 1000 / WINDOW_RATE) 
+        {
+            // print fps in terminal
+            printf("FPS: %d\n", (1000 / delta));
 
-        // moves the bullets to the players location
-        // to make the illusion that they are spawning
-        if (shootBullet(player)) {
-            int bullet_index = bullet_qty % BULLET_MAX_QTY;
-            bullets[bullet_index]->dest.x = player->dest.x;// + (bullets[bullet_index]->dest.w / 2);
-            bullets[bullet_index]->dest.y = player->dest.y;// + (bullets[bullet_index]->dest.h / 2);
-            bullet_qty++;
+            // update the tick count
+            ticks_b = ticks_a;
+            
+            // clears the screen
+            SDL_RenderClear(rend);
+
+            // manages player movement
+            movePlayer(player);
+
+            // apply limits to player movement
+            limitPlayer(player, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+            // moves the bullets to the players location
+            // to make the illusion that they are spawning
+            if (shootBullet(player)) {
+                int bullet_index = bullet_qty % BULLET_QTY;
+                bullets[bullet_index]->dest.x = player->dest.x;// + (bullets[bullet_index]->dest.w / 2);
+                bullets[bullet_index]->dest.y = player->dest.y;// + (bullets[bullet_index]->dest.h / 2);
+                bullet_qty++;
+            }
+            
+            // draws all the bullets first
+            for (int b = 0; b < BULLET_QTY; b++) {
+                bullets[b]->dest.x += BULLET_SPEED;
+                SDL_RenderCopy(rend, bullets[b]->tex, NULL, &bullets[b]->dest);
+            }
+
+            // then draws the player over
+            SDL_RenderCopy(rend, player->tex, NULL, &player->dest);
+    
+            // then draws the player over
+            SDL_RenderCopy(rend, enemy->tex, NULL, &enemy->dest);
+    
+            // triggers the double buffers
+            // for multiple rendering
+            SDL_RenderPresent(rend);
         }
-
-        // clears the screen
-        SDL_RenderClear(rend);
-        
-        // draws all the bullets first
-        for (int b = 0; b < BULLET_MAX_QTY; b++) {
-            bullets[b]->dest.x += BULLET_SPEED;
-            SDL_RenderCopy(rend, bullets[b]->tex, NULL, &bullets[b]->dest);
-        }
-
-        // then draws the player over
-        SDL_RenderCopy(rend, player->tex, NULL, &player->dest);
- 
-        // then draws the player over
-        SDL_RenderCopy(rend, enemy->tex, NULL, &enemy->dest);
- 
-        // triggers the double buffers
-        // for multiple rendering
-        SDL_RenderPresent(rend);
- 
-        // limits WINDOW_RATE
-        SDL_Delay(1000 / WINDOW_RATE);
     }
  
     // destroy texture

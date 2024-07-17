@@ -2,6 +2,6 @@
 #define WINDOW_HEIGHT 360
 #define WINDOW_RATE 60
 #define PLAYER_SPEED 6
-#define PLAYER_SHOOT_DELAY 6
+#define PLAYER_DELAY 6
 #define BULLET_SPEED 16
-#define BULLET_MAX_QTY 16
+#define BULLET_QTY 16

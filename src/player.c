@@ -35,7 +35,7 @@ Player *createPlayer(SDL_Renderer* rend, int winw, int winh) {
     player->surface = surface;
     player->tex = tex;
     player->dest = dest;
-    player->shoot = PLAYER_SHOOT_DELAY;
+    player->shoot = PLAYER_DELAY;
     return player;
 }
 void movePlayer(Player *player) {
@@ -75,7 +75,7 @@ bool shootBullet(Player *player) {
     
     // uses the arrow keys for movement
     if (keystate[SDL_SCANCODE_C]) {
-        if (player->shoot >= PLAYER_SHOOT_DELAY) {
+        if (player->shoot >= PLAYER_DELAY) {
             player->shoot = 0;
             return true;
         }
